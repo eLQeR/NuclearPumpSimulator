@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}User Details{% endblock %}
+
+{% block content %}
+<h1>{{ user.username }}</h1>
+<p>Email: {{ user.email }}</p>
+<p>Role: {{ user.get_role_display }}</p>
+<a href="{% url 'user_list' %}" class="btn btn-primary">Back to Users</a>
+{% endblock %}
