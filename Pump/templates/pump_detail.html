@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Pump Details{% endblock %}
+{% block content %}
+<h1>{{ pump.name }}</h1>
+<ul class="list-group list-group-flush bg-dark text-white">
+<li class="list-group-item bg-dark">Status: {{ pump.get_status_display }}</li>
+<li class="list-group-item bg-dark">Pressure: {{ pump.pressure }} bar</li>
+<li class="list-group-item bg-dark">Speed: {{ pump.speed }} RPM</li>
+<li class="list-group-item bg-dark">Power: {{ pump.power }} kW</li>
+</ul>
+{% if request.user.role in ['admin', 'operator'] %}
+<div class="mt-3">
+<a href="{% url 'pump_control' pump.pk %}" class="btn btn-primary">Control Pump</a>
+</div>
+{% endif %}
+{% endblock %}
