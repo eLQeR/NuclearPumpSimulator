@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-3">Welcome to Pump Control</h1>
+    <p class="lead">Efficient and secure management for industrial pumps.</p>
+    <a href="{% url 'pump_list' %}" class="btn btn-primary btn-lg me-2">Manage Pumps</a>
+    <a href="{% url 'user_list' %}" class="btn btn-secondary btn-lg">Manage Users</a>
+</div>
+{% endblock %}
