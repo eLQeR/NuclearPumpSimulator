@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Pumps{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h1>Pumps</h1>
+{% if user_role in 'admin,manager' %}
+<a href="{% url 'pump_create' %}" class="btn btn-primary">Add Pump</a>
+{% endif %}
+</div>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+{% for pump in pumps %}
+<div class="col">
+<div class="card bg-dark text-white">
+<div class="card-body">
+<h5 class="card-title">{{ pump.name }}</h5>
+<p class="card-text">Status: {{ pump.get_status_display }}</p>
+<a href="{% url 'pump_detail' pump.pk %}" class="btn btn-light">Details</a>
+{% if request.user.role in 'operator,admin' %}
+<a href="{% url 'pump_control' pump.pk %}" class="btn btn-primary">Control</a>
+{% endif %}
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}
