@@ -8,7 +8,7 @@
 <li class="list-group-item bg-dark">Speed: {{ pump.speed }} RPM</li>
 <li class="list-group-item bg-dark">Power: {{ pump.power }} kW</li>
 </ul>
-{% if request.user.role in ['admin', 'operator'] %}
+{% if user.role == 'admin' or user.role == 'operator' %}
 <div class="mt-3">
 <a href="{% url 'pump_control' pump.pk %}" class="btn btn-primary">Control Pump</a>
 </div>

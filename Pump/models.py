@@ -29,3 +29,13 @@ class Pump(models.Model):
             ("start_pump", "Can start the pump"),
             ("stop_pump", "Can stop the pump"),
         ]
+
+
+# Модель для зберігання логів насосів
+class PumpLog(models.Model):
+    pump = models.ForeignKey(Pump, related_name='logs', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    message = models.TextField()
+
+    def __str__(self):
+        return f"Log for {self.pump.name} at {self.timestamp}"

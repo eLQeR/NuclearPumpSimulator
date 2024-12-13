@@ -7,6 +7,7 @@ from .forms import PumpForm, PumpControlForm
 def index(request):
     return render(request, 'index.html')
 
+
 def pump_list(request):
     pumps = Pump.objects.all()
     return render(request, 'pump_list.html', {'pumps': pumps, 'user_role': request.user.role})
@@ -57,6 +58,7 @@ def pump_delete(request, pk):
         pump.delete()
         return redirect('pump_list')
     return render(request, 'pump_confirm_delete.html', {'pump': pump})
+
 
 def pump_control(request, pk):
     pump = get_object_or_404(Pump, pk=pk)
