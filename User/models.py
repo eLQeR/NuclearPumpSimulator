@@ -11,11 +11,7 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='viewer')
 
-    def is_operator(self):
-        return self.role == 'operator'
+    @property
+    def is_valid(self):
+        return self.role in 'admin,engineer,operator'
 
-    def is_admin(self):
-        return self.role == 'admin'
-
-    def is_engineer(self):
-        return self.role == 'engineer'

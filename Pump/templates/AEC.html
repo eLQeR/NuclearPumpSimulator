@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Модель Насоса АЕС в Розрізі</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #f4f4f4;
+            height: 100vh;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        #controls {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #controls button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        #controls button:hover {
+            background-color: #45a049;
+        }
+
+        #controls input[type="range"] {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #controls span {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        #chart-container {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #pump-container {
+            width: 100%;
+            height: 60%;
+            background: #eee;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart {
+            width: 100%;
+            height: 300px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="controls">
+    <button id="startStopButton">Запустити/Зупинити обертання колеса</button>
+    <button id="valveButton">Відкрити/Закрити клапан</button>
+
+    <label for="speedControl">Швидкість обертання:</label>
+    <input type="range" id="speedControl" min="0" max="100" value="0">
+    <span id="speedValue">0</span> RPM
+</div>
+
+<div id="chart-container">
+    <div id="pump-container">
+        <canvas id="pumpModel"></canvas>
+    </div>
+    <canvas id="operationChart" class="chart"></canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // 3D сцена насоса
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({canvas: document.getElementById('pumpModel')});
+    renderer.setSize(window.innerWidth * 0.7, 600);
+    document.body.appendChild(renderer.domElement);
+
+    // Створення основних частин насоса (деталі моделі)
+    const pumpBaseGeometry = new THREE.CylinderGeometry(2, 2, 0.5, 32); // Основа насоса
+    const pumpBaseMaterial = new THREE.MeshBasicMaterial({ color: 0x8e8e8e });
+    const pumpBase = new THREE.Mesh(pumpBaseGeometry, pumpBaseMaterial);
+    scene.add(pumpBase);
+
+    const pumpMainBodyGeometry = new THREE.CylinderGeometry(1, 1, 3, 32); // Тіло насоса
+    const pumpMainBodyMaterial = new THREE.MeshBasicMaterial({ color: 0x8e8e8e });
+    const pumpMainBody = new THREE.Mesh(pumpMainBodyGeometry, pumpMainBodyMaterial);
+    pumpMainBody.position.y = 1.5;
+    scene.add(pumpMainBody);
+
+    const pumpShaftGeometry = new THREE.CylinderGeometry(0.1, 0.1, 3, 32); // Вал насоса
+    const pumpShaftMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+    const pumpShaft = new THREE.Mesh(pumpShaftGeometry, pumpShaftMaterial);
+    pumpShaft.position.y = 1.5;
+    scene.add(pumpShaft);
+
+    // Внутрішні шестерні насоса
+    const gearGeometry = new THREE.TorusGeometry(0.5, 0.1, 16, 100); // Шестерня
+    const gearMaterial = new THREE.MeshBasicMaterial({ color: 0xaaaaaa });
+    const gear1 = new THREE.Mesh(gearGeometry, gearMaterial);
+    gear1.position.set(1, 1.5, 0);
+    gear1.rotation.x = Math.PI / 2; // Встановлення орієнтації шестерні
+    scene.add(gear1);
+
+    const gear2 = new THREE.Mesh(gearGeometry, gearMaterial);
+    gear2.position.set(-1, 1.5, 0);
+    gear2.rotation.x = Math.PI / 2;
+    scene.add(gear2);
+
+    // Трубопровід
+    const pipeGeometry = new THREE.CylinderGeometry(0.3, 0.3, 4, 32); // Трубопровід
+    const pipeMaterial = new THREE.MeshBasicMaterial({ color: 0x333333 });
+    const pipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+    pipe.rotation.z = Math.PI / 2; // Поворот трубопроводу
+    pipe.position.y = 2.5;
+    scene.add(pipe);
+
+    // Клапан
+    const valveGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5); // Клапан
+    const valveMaterial = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
+    const valve = new THREE.Mesh(valveGeometry, valveMaterial);
+    valve.position.set(2, 2, 0); // Розташування клапану
+    scene.add(valve);
+
+    camera.position.z = 10;
+
+    let speed = 0;
+    let isRunning = false;
+    let valveOpen = false;
+
+    // Моделюємо обертання насоса
+    function animate() {
+        requestAnimationFrame(animate);
+
+        if (isRunning) {
+            pumpMainBody.rotation.x += speed * 0.01;
+            pumpShaft.rotation.x += speed * 0.01; // Обертання валу
+            gear1.rotation.x += speed * 0.01; // Обертання шестерні
+            gear2.rotation.x += speed * 0.01; // Обертання шестерні
+        }
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Графік роботи насоса
+    const ctx = document.getElementById('operationChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Швидкість обертання (RPM)',
+                data: [],
+                borderColor: 'rgb(75, 192, 192)',
+                fill: false,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    ticks: {
+                        display: false
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    ticks: {
+                        stepSize: 10
+                    }
+                }
+            }
+        }
+    });
+
+    // Оновлення графіка
+    function updateGraph() {
+        const now = new Date();
+        chart.data.labels.push(now.toLocaleTimeString());
+        chart.data.datasets[0].data.push(speed);
+
+        if (chart.data.labels.length > 20) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+        }
+
+        chart.update();
+    }
+
+    // Оновлювати графік кожну секунду
+    setInterval(updateGraph, 1000);
+
+    // Обробка подій
+    document.getElementById('startStopButton').addEventListener('click', () => {
+        isRunning = !isRunning;
+    });
+
+    document.getElementById('valveButton').addEventListener('click', () => {
+        valveOpen = !valveOpen;
+        if (valveOpen) {
+            valve.position.y = 3; // Відкритий клапан
+            alert('Клапан відкрито');
+        } else {
+            valve.position.y = 2; // Закритий клапан
+            alert('Клапан закрито');
+        }
+    });
+
+    document.getElementById('speedControl').addEventListener('input', (event) => {
+        speed = event.target.value;
+        document.getElementById('speedValue').textContent = speed;
+    });
+</script>
+
+</body>
+</html>

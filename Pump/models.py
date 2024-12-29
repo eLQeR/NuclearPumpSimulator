@@ -1,7 +1,20 @@
 from django.db import models
 
-
 class Pump(models.Model):
+    STATUS_CHOICES = [
+        ('OFF', 'Off'),
+        ('ON', 'On'),
+        ('ERROR', 'Error'),
+    ]
+
+    name = models.CharField(max_length=100)
+    serial_number = models.CharField(max_length=100)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OFF')
+    wanted_performance = models.FloatField(default=0.0)  # Продуктивність (л/с)
+    wanted_rotation_speed = models.FloatField(default=0.0)  # Швидкість обертання (об/хв)
+
+
+class PumpLog(models.Model):
     STATUS_CHOICES = [
         ('OFF', 'Off'),
         ('ON', 'On'),
@@ -11,8 +24,7 @@ class Pump(models.Model):
         ('OPEN', 'Open'),
         ('CLOSED', 'Closed'),
     ]
-    name = models.CharField(max_length=100)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='OFF')
+    pump = models.ForeignKey(to='Pump', on_delete=models.CASCADE, null=True, related_name='logs')
     pressure = models.FloatField(default=0.0)  # Тиск (бар)
     temperature = models.FloatField(default=0.0)  # Температура (°C)
     performance = models.FloatField(default=0.0)  # Продуктивність (л/с)
@@ -20,9 +32,10 @@ class Pump(models.Model):
     rotation_speed = models.FloatField(default=0.0)  # Швидкість обертання (об/хв)
     is_wheel_rotating = models.BooleanField(default=False)  # Чи обертається колесо
     valve_status = models.CharField(max_length=10, choices=VALVE_STATUS_CHOICES, default='CLOSED')  # Стан клапана
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name
+        return self.pump.name
 
     class Meta:
         permissions = [

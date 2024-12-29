@@ -26,12 +26,34 @@
         .btn-primary:hover {
             background-color: #3c5972;
         }
+    .table th, .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .badge {
+            font-size: 0.9em;
+            padding: 5px 10px;
+        }
+
         footer {
             background-color: #171a21;
             color: #c7d5e0;
             padding: 20px;
             text-align: center;
         }
+        #pump-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+#controls .form-range {
+    max-width: 300px;
+    margin: 10px auto;
+}
+
     </style>
 </head>
 <body>
@@ -55,8 +77,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#">{{ user.username }}</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                <li class="nav-item" style="margin-top: 7px">
+                    <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button type="submit">Logout</button>
+                    </form>
                 </li>
                 {% else %}
                 <li class="nav-item">

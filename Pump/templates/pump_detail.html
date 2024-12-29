@@ -1,16 +1,83 @@
 {% extends "base.html" %}
 {% block title %}Pump Details{% endblock %}
+
 {% block content %}
-<h1>{{ pump.name }}</h1>
-<ul class="list-group list-group-flush bg-dark text-white">
-<li class="list-group-item bg-dark">Status: {{ pump.get_status_display }}</li>
-<li class="list-group-item bg-dark">Pressure: {{ pump.pressure }} bar</li>
-<li class="list-group-item bg-dark">Speed: {{ pump.speed }} RPM</li>
-<li class="list-group-item bg-dark">Power: {{ pump.power }} kW</li>
-</ul>
-{% if request.user.role in ['admin', 'operator'] %}
-<div class="mt-3">
-<a href="{% url 'pump_control' pump.pk %}" class="btn btn-primary">Control Pump</a>
+<div class="container my-4">
+    <h1 class="text-center mb-4">{{ pump.name }}</h1>
+
+    <!-- Загальна інформація про насос -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Pump Information</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Serial Number:</strong> {{ pump.serial_number }}</p>
+            <p><strong>Status:</strong>
+                {% if pump.status == 'ON' %}
+                    <span class="badge bg-success">ON</span>
+                {% elif pump.status == 'OFF' %}
+                    <span class="badge bg-secondary">OFF</span>
+                {% else %}
+                    <span class="badge bg-danger">ERROR</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Логи насоса -->
+    <h3 class="mt-4">Pump Logs</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Pressure (bar)</th>
+                    <th>Temperature (°C)</th>
+                    <th>Performance (l/s)</th>
+                    <th>Power (kW)</th>
+                    <th>Speed (RPM)</th>
+                    <th>Valve Status</th>
+                    <th>Wheel Rotating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.timestamp }}</td>
+                    <td>{{ log.pressure }}</td>
+                    <td>{{ log.temperature }}</td>
+                    <td>{{ log.performance }}</td>
+                    <td>{{ log.power }}</td>
+                    <td>{{ log.rotation_speed }}</td>
+                    <td>
+                        {% if log.valve_status == 'OPEN' %}
+                            <span class="badge bg-success">OPEN</span>
+                        {% else %}
+                            <span class="badge bg-danger">CLOSED</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if log.is_wheel_rotating %}
+                            ✅
+                        {% else %}
+                            ❌
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No logs available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Кнопка керування насосом -->
+{#    {% if user.is_valid %}#}
+    <div class="text-center mt-4">
+        <a href="{% url 'pump_control' pump.pk %}" class="btn btn-lg btn-primary">Control Pump</a>
+    </div>
+{#    {% endif %}#}
 </div>
-{% endif %}
 {% endblock %}
